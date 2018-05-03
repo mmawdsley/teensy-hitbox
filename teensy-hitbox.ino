@@ -72,7 +72,6 @@ struct Controller {
 };
 
 Controller controller;
-Controller lastController;
 
 void setup() {
   int i;
@@ -88,12 +87,6 @@ void setup() {
   controller.left = false;
   controller.right = false;
   controller.direction = 0;
-
-  lastController.up = false;
-  lastController.down = false;
-  lastController.left = false;
-  lastController.right = false;
-  lastController.direction = 0;
 
   // Add each of the buttons to the array and initialise each pin as pull-up
   for (i = 0; i < BUTTON_COUNT; i += 1) {
@@ -113,7 +106,6 @@ void loop() {
   updateInputs();
   updateDirection();
   pushState();
-  copyState();
 
   // Delay next read
   delay(READ_DELAY);
@@ -362,15 +354,4 @@ int calculateAngle() {
   }
 
   return angle;
-}
-
-/**
- * Copy the current state of the controller over the previous state
- */
-void copyState() {
-  lastController.up = controller.up;
-  lastController.down = controller.down;
-  lastController.left = controller.left;
-  lastController.right = controller.right;
-  lastController.direction = controller.direction;
 }
