@@ -68,6 +68,7 @@ struct Controller {
   bool down;
   bool left;
   bool right;
+  int direction;
 };
 
 Controller controller;
@@ -86,11 +87,13 @@ void setup() {
   controller.down = false;
   controller.left = false;
   controller.right = false;
+  controller.direction = 0;
 
   lastController.up = false;
   lastController.down = false;
   lastController.left = false;
   lastController.right = false;
+  lastController.direction = 0;
 
   // Add each of the buttons to the array and initialise each pin as pull-up
   for (i = 0; i < BUTTON_COUNT; i += 1) {
@@ -107,21 +110,38 @@ void setup() {
 }
 
 void loop() {
-  int i;
+  updateInputs();
+  updateDirection();
+  pushState();
+  copyState();
 
+  // Delay next read
+  delay(READ_DELAY);
+}
+
+/**
+ * Read in the directional inputs and the buttons
+ */
+void updateInputs() {
   // Update each of the directions
   leftButton.update();
   rightButton.update();
   upButton.update();
   downButton.update();
 
+  int i;
+
   // Update each of the buttons
   for (i = 0; i < BUTTON_COUNT; i += 1) {
     buttons[i]->update();
   }
+}
 
-  int direction = 0;
-
+/**
+ * Check whether any of the directions have just been pressed or released to
+ * work out the current direction
+ */
+void updateDirection() {
   // Check to see whether each of the directions is falling or rising
   if (upButton.fallingEdge() && downButton.fallingEdge()) {
     // Both pressed at the same time, return the stick to neutral
@@ -132,8 +152,8 @@ void loop() {
     controller.up = true;
     controller.down = true;
 
-    direction = direction & ~ UP_BIT;
-    direction = direction & ~ DOWN_BIT;
+    controller.direction = controller.direction & ~ UP_BIT;
+    controller.direction = controller.direction & ~ DOWN_BIT;
   } else {
     if (upButton.fallingEdge()) {
       // Up button pressed
@@ -142,8 +162,8 @@ void loop() {
       Serial.println("Up pressed");
       #endif
 
-      direction = direction | UP_BIT;
-      direction = direction & ~ DOWN_BIT;
+      controller.direction = controller.direction | UP_BIT;
+      controller.direction = controller.direction & ~ DOWN_BIT;
       controller.up = true;
     } else if (upButton.risingEdge()) {
       // Up button released
@@ -152,7 +172,7 @@ void loop() {
       Serial.println("Up released");
       #endif
 
-      direction = direction & ~ UP_BIT;
+      controller.direction = controller.direction & ~ UP_BIT;
       controller.up = false;
 
       // Add the down bit if it's still being held
@@ -160,7 +180,7 @@ void loop() {
         #ifdef DEBUG
         Serial.println("Reverting to down");
         #endif
-        direction = direction | DOWN_BIT;
+        controller.direction = controller.direction | DOWN_BIT;
       }
     }
 
@@ -171,8 +191,8 @@ void loop() {
       Serial.println("Down pressed");
       #endif
 
-      direction = direction | DOWN_BIT;
-      direction = direction & ~ UP_BIT;
+      controller.direction = controller.direction | DOWN_BIT;
+      controller.direction = controller.direction & ~ UP_BIT;
 
       controller.down = true;
     } else if (downButton.risingEdge()) {
@@ -182,7 +202,7 @@ void loop() {
       Serial.println("Down released");
       #endif
 
-      direction = direction & ~ DOWN_BIT;
+      controller.direction = controller.direction & ~ DOWN_BIT;
       controller.down = false;
 
       if (controller.up) {
@@ -190,7 +210,7 @@ void loop() {
         Serial.println("Reverting to up");
         #endif
 
-        direction = direction | UP_BIT;
+        controller.direction = controller.direction | UP_BIT;
       }
     }
   }
@@ -204,8 +224,8 @@ void loop() {
     controller.left = true;
     controller.right = true;
 
-    direction = direction & ~ LEFT_BIT;
-    direction = direction & ~ RIGHT_BIT;
+    controller.direction = controller.direction & ~ LEFT_BIT;
+    controller.direction = controller.direction & ~ RIGHT_BIT;
   } else {
     if (leftButton.fallingEdge()) {
       // Left button pressed
@@ -215,8 +235,8 @@ void loop() {
       Serial.println("Left pressed");
       #endif
 
-      direction = direction | LEFT_BIT;
-      direction = direction & ~ RIGHT_BIT;
+      controller.direction = controller.direction | LEFT_BIT;
+      controller.direction = controller.direction & ~ RIGHT_BIT;
 
       controller.left = true;
     } else if (leftButton.risingEdge()) {
@@ -227,7 +247,7 @@ void loop() {
       Serial.println("Left released");
       #endif
 
-      direction = direction & ~ LEFT_BIT;
+      controller.direction = controller.direction & ~ LEFT_BIT;
       controller.left = false;
 
       // Add the right if it's still being held
@@ -236,7 +256,7 @@ void loop() {
         Serial.println("Reverting to right");
         #endif
 
-        direction = direction | RIGHT_BIT;
+        controller.direction = controller.direction | RIGHT_BIT;
       }
     }
 
@@ -245,17 +265,17 @@ void loop() {
       // Add the right bit and remove the left bit
       #ifdef DEBUG
       Serial.print("Right pressed, direction is ");
-      Serial.println(direction);
+      Serial.println(controller.direction);
       #endif
 
-      direction = direction | RIGHT_BIT;
-      direction = direction & ~LEFT_BIT;
+      controller.direction = controller.direction | RIGHT_BIT;
+      controller.direction = controller.direction & ~LEFT_BIT;
 
       controller.right = true;
 
       #ifdef DEBUG
       Serial.print("Direction now ");
-      Serial.println(direction);
+      Serial.println(controller.direction);
       #endif
     } else if (rightButton.risingEdge()) {
       // Right button released
@@ -264,7 +284,7 @@ void loop() {
       Serial.println("Right released");
       #endif
 
-      direction = direction & ~ RIGHT_BIT;
+      controller.direction = controller.direction & ~ RIGHT_BIT;
       controller.right = false;
 
       // Add the left bit if it's still being held
@@ -273,33 +293,17 @@ void loop() {
         Serial.println("Reverting to left");
         #endif
 
-        direction = direction | LEFT_BIT;
+        controller.direction = controller.direction | LEFT_BIT;
       }
     }
   }
+}
 
-  // Translate the direction into an angle
-  int angle;
-
-  if (direction == UP_BIT) {
-    angle = 0;
-  } else if (direction & UP_BIT && direction & RIGHT_BIT) {
-    angle = 45;
-  } else if (direction == RIGHT_BIT) {
-    angle = 90;
-  } else if (direction & RIGHT_BIT && direction & DOWN_BIT) {
-    angle = 135;
-  } else if (direction == DOWN_BIT) {
-    angle = 180;
-  } else if (direction & DOWN_BIT && direction & LEFT_BIT) {
-    angle = 225;
-  } else if (direction == LEFT_BIT) {
-    angle = 270;
-  } else if (direction & LEFT_BIT && direction & UP_BIT) {
-    angle = 315;
-  } else {
-    angle = -1;
-  }
+/**
+ * Send the current state of the controller
+ */
+void pushState() {
+  int angle = calculateAngle();
 
   // Set the default values for the inputs we don't use
   Joystick.X(512);
@@ -312,6 +316,8 @@ void loop() {
   // Set the direction
   Joystick.hat(angle);
 
+  int i;
+
   // Check to see whether each button is falling or rising
   for (i = 0; i < BUTTON_COUNT; i += 1) {
     if (buttons[i]->fallingEdge()) {
@@ -323,13 +329,48 @@ void loop() {
 
   // Send the updated state
   Joystick.send_now();
+}
 
-  // Copy the state for next time
+/**
+ * Calculate the angle based on the direction of the controller
+ *
+ * Up is considered zero degrees, right is 90 and so on
+ *
+ * @return angle
+ */
+int calculateAngle() {
+  int angle;
+
+  if (controller.direction == UP_BIT) {
+    angle = 0;
+  } else if (controller.direction & UP_BIT && controller.direction & RIGHT_BIT) {
+    angle = 45;
+  } else if (controller.direction == RIGHT_BIT) {
+    angle = 90;
+  } else if (controller.direction & RIGHT_BIT && controller.direction & DOWN_BIT) {
+    angle = 135;
+  } else if (controller.direction == DOWN_BIT) {
+    angle = 180;
+  } else if (controller.direction & DOWN_BIT && controller.direction & LEFT_BIT) {
+    angle = 225;
+  } else if (controller.direction == LEFT_BIT) {
+    angle = 270;
+  } else if (controller.direction & LEFT_BIT && controller.direction & UP_BIT) {
+    angle = 315;
+  } else {
+    angle = -1;
+  }
+
+  return angle;
+}
+
+/**
+ * Copy the current state of the controller over the previous state
+ */
+void copyState() {
   lastController.up = controller.up;
   lastController.down = controller.down;
   lastController.left = controller.left;
   lastController.right = controller.right;
-
-  // Delay next read
-  delay(READ_DELAY);
+  lastController.direction = controller.direction;
 }
