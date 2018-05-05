@@ -1,11 +1,11 @@
 #include <Bounce.h>
 
 #define DEBUG
-#define LEFT_PIN 4
-#define RIGHT_PIN 5
+#define LEFT_PIN 2
+#define RIGHT_PIN 4
 #define UP_PIN 22
 #define DOWN_PIN 3
-#define LIGHT_PUNCH_PIN 6
+#define LIGHT_PUNCH_PIN 5
 #define MEDIUM_PUNCH_PIN 20
 #define HEAVY_PUNCH_PIN 19
 #define EX_PUNCH_PIN 18
@@ -13,10 +13,10 @@
 #define MEDIUM_KICK_PIN 15
 #define HEAVY_KICK_PIN 16
 #define EX_KICK_PIN 17
-#define LEFT_CLICK_PIN 2
+#define LEFT_CLICK_PIN 1
 #define RIGHT_CLICK_PIN 14
 #define START_PIN 13
-#define BACK_PIN 1
+#define BACK_PIN 0
 #define BUTTON_COUNT 12
 #define BOUNCE_TIME 10
 
