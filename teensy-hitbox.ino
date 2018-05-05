@@ -1,24 +1,23 @@
 #include <Bounce.h>
 
 #define DEBUG
-#define LEFT_PIN 0
-#define RIGHT_PIN 2
+#define LEFT_PIN 6
+#define RIGHT_PIN 4
 #define UP_PIN 3
-#define DOWN_PIN 1
-#define LIGHT_PUNCH_PIN 13
-#define MEDIUM_PUNCH_PIN 14
-#define HEAVY_PUNCH_PIN 15
-#define EX_PUNCH_PIN 16
-#define LIGHT_KICK_PIN
-#define MEDIUM_KICK_PIN
-#define HEAVY_KICK_PIN
-#define EX_KICK_PIN
-#define LEFT_CLICK_PIN
-#define RIGHT_CLICK_PIN
-#define START_PIN
-#define BACK_PIN
-#define DIRECTION_COUNT 4
-#define BUTTON_COUNT 4
+#define DOWN_PIN 22
+#define LIGHT_PUNCH_PIN 5
+#define MEDIUM_PUNCH_PIN 20
+#define HEAVY_PUNCH_PIN 19
+#define EX_PUNCH_PIN 18
+#define LIGHT_KICK_PIN 21
+#define MEDIUM_KICK_PIN 15
+#define HEAVY_KICK_PIN 16
+#define EX_KICK_PIN 17
+#define LEFT_CLICK_PIN 1
+#define RIGHT_CLICK_PIN 14
+#define START_PIN 13
+#define BACK_PIN 0
+#define BUTTON_COUNT 12
 #define BOUNCE_TIME 10
 
 const int BUTTON_PINS[BUTTON_COUNT] = {
@@ -26,14 +25,14 @@ const int BUTTON_PINS[BUTTON_COUNT] = {
   MEDIUM_PUNCH_PIN,
   HEAVY_PUNCH_PIN,
   EX_PUNCH_PIN,
-  /* LIGHT_KICK_PIN, */
-  /* MEDIUM_KICK_PIN, */
-  /* HEAVY_KICK_PIN, */
-  /* EX_KICK_PIN, */
-  /* LEFT_CLICK_PIN, */
-  /* RIGHT_CLICK_PIN, */
-  /* START_PIN, */
-  /* BACK_PIN, */
+  LIGHT_KICK_PIN,
+  MEDIUM_KICK_PIN,
+  HEAVY_KICK_PIN,
+  EX_KICK_PIN,
+  LEFT_CLICK_PIN,
+  RIGHT_CLICK_PIN,
+  START_PIN,
+  BACK_PIN,
 };
 
 const int BUTTON_OUTPUTS[BUTTON_COUNT] = {
@@ -41,14 +40,14 @@ const int BUTTON_OUTPUTS[BUTTON_COUNT] = {
   2,
   3,
   4,
-  /* 5, */
-  /* 6, */
-  /* 7, */
-  /* 8, */
-  /* 9, */
-  /* 10, */
-  /* 11, */
-  /* 12, */
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
 };
 
 const int READ_DELAY = 10;
